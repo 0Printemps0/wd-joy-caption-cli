@@ -1,0 +1,128 @@
+# 数据路径
+data_path = "path/to/your/input"
+
+# 是否递归搜索子目录
+recursive = false
+
+# 日志级别
+log_level = "INFO"
+
+# 是否保存日志
+save_logs = false
+
+# 模型站点
+model_site = "huggingface"
+
+# 模型保存路径
+models_save_path = "models"
+
+# 是否使用SDK缓存
+use_sdk_cache = false
+
+# 下载方法
+download_method = "SDK"
+
+# 是否强制下载
+force_download = false
+
+# 是否跳过下载
+skip_download = false
+
+# WD配置文件
+wd_config = "default_wd.json"
+
+# WD模型名称
+wd_model_name = "wd-eva02-large-tagger-v3"
+
+# 是否强制使用CPU
+wd_force_use_cpu = false
+
+# WD字幕扩展名
+wd_caption_extension = ".wdcaption"
+
+# 是否移除下划线
+wd_remove_underscore = true
+
+# 不需要的标签
+wd_undesired_tags = ""
+
+# 是否统计标签频率
+wd_tags_frequency = false
+
+# 标签阈值
+wd_threshold = 0.35
+
+# 通用标签阈值
+wd_general_threshold = false
+
+# 角色标签阈值
+wd_character_threshold = false
+
+# 是否将评分标签添加到第一个
+wd_add_rating_tags_to_first = false
+
+# 是否将评分标签添加到最后一个
+wd_add_rating_tags_to_last = false
+
+# 角色标签是否优先
+wd_character_tags_first = false
+
+# 总是优先的标签
+wd_always_first_tags = false
+
+# 字幕分隔符
+wd_caption_separator = ", "
+
+# 标签替换
+wd_tag_replacement = false
+
+# 是否扩展角色标签
+wd_character_tag_expand = false
+
+# Joy配置文件
+joy_config = "default_joy.json"
+
+# Joy模型名称
+joy_model_name = "Joy-Caption-Pre-Alpha"
+
+# 是否使用CPU
+joy_use_cpu = false
+
+# LLM数据类型
+joy_llm_dtype = "fp16"
+
+# LLM量化
+joy_llm_qnt = "none"
+
+# Joy字幕扩展名
+joy_caption_extension = ".txt"
+
+# 是否读取WD字幕
+joy_read_wd_caption = false
+
+# 是否在没有WD的情况下生成字幕
+joy_caption_without_wd = false
+
+# 用户提示
+joy_user_prompt = "DEFAULT_USER_PROMPT_WITHOUT_WD"
+
+# 温度参数
+joy_temperature = 0.5
+
+# 最大tokens数量
+joy_max_tokens = 300
+
+# 字幕方法
+caption_method = "both"
+
+# 运行方法
+run_method = "queue"
+
+# 图像大小
+image_size = 1024
+
+# 是否不覆盖现有文件
+not_overwrite = false
+
+# 自定义字幕保存路径
+custom_caption_save_path = ""
