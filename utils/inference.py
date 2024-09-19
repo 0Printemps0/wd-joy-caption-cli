@@ -40,7 +40,7 @@ def get_caption_file_path(
         custom_caption_save_path:Path,
         caption_extension:str,
     ) -> Path:
-    if custom_caption_save_path is not None:
+    if custom_caption_save_path:
         if not os.path.exists(custom_caption_save_path):
             logger.warning(f'{custom_caption_save_path} NOT FOUND! Will create it...')
             os.makedirs(custom_caption_save_path, exist_ok=True)
@@ -121,9 +121,9 @@ class Joy:
                 x = self.activation(x)
                 x = self.linear2(x)
                 return x
-        device = "cpu" if self.args.joy_use_cpu else "cuda"
+        device = "cpu" if self.args['joy_use_cpu'] else "cuda"
         # Load CLIP
-        self.logger.info(f'Loading CLIP with {"CPU" if self.args.joy_use_cpu else "GPU"}...')
+        self.logger.info(f'Loading CLIP with {"CPU" if self.args["joy_use_cpu"] else "GPU"}...')
         start_time = time.monotonic()
         self.clip_processor = AutoProcessor.from_pretrained(self.clip_path)
         self.clip_model = AutoModel.from_pretrained(self.clip_path)
@@ -134,21 +134,21 @@ class Joy:
         self.logger.info(f'CLIP Loaded in {time.monotonic() - start_time:.1f}s.')
 
         # Load LLM
-        self.logger.info(f'Loading LLM with {"CPU" if self.args.joy_use_cpu else "GPU"}...')
+        self.logger.info(f'Loading LLM with {"CPU" if self.args["joy_use_cpu"] else "GPU"}...')
         start_time = time.monotonic()
         self.llm_tokenizer = AutoTokenizer.from_pretrained(self.llm_path, use_fast=False, trust_remote_code=True)
         assert (isinstance(self.llm_tokenizer, PreTrainedTokenizer) or
                 isinstance(self.llm_tokenizer, PreTrainedTokenizerFast)), \
             f"Tokenizer is of type {type(self.llm_tokenizer)}"
-        llm_dtype = torch.float32 if self.args.joy_use_cpu else torch.float16 \
-            if self.args.joy_llm_dtype == "fp16" else torch.bfloat16
+        llm_dtype = torch.float32 if self.args['joy_use_cpu'] else torch.float16 \
+            if self.args['joy_llm_dtype'] == "fp16" else torch.bfloat16
         self.logger.info(f'Joy LLM dtype: {llm_dtype}')
-        if self.args.joy_llm_qnt == "4bit":
+        if self.args['joy_llm_qnt'] == "4bit":
             qnt_config = BitsAndBytesConfig(load_in_4bit=True,
                                             llm_int8_enable_fp32_cpu_offload=True,
                                             bnb_4bit_compute_dtype=llm_dtype)
             self.logger.info(f'Joy LLM 4bit quantization: Enabled')
-        elif self.args.joy_llm_qnt == "8bit":
+        elif self.args['joy_llm_qnt'] == "8bit":
             qnt_config = BitsAndBytesConfig(load_in_8bit=True,
                                             llm_int8_enable_fp32_cpu_offload=True,
                                              bnb_4bit_compute_dtype=llm_dtype)
@@ -156,14 +156,15 @@ class Joy:
         else:
             qnt_config = None
         self.llm = AutoModelForCausalLM.from_pretrained(self.llm_path,
-                                                        device_map="auto" if not self.args.joy_use_cpu else "cpu",
-                                                        torch_dtype=llm_dtype if self.args.joy_llm_qnt == "none" else None,
+                                                        device_map="cuda" if not self.args['joy_use_cpu'] else "cpu",
+                                                        low_cpu_mem_usage=True if not self.args['joy_use_cpu'] else False,
+                                                        torch_dtype=llm_dtype if self.args['joy_llm_qnt'] == "none" else None,
                                                         quantization_config=qnt_config)
         self.llm.eval()
         self.logger.info(f'LLM Loaded in {time.monotonic() - start_time:.1f}s.')
 
         # Load Image Adapter
-        self.logger.info(f'Loading Image Adapter with {"CPU" if self.args.joy_use_cpu else "GPU"}...')
+        self.logger.info(f'Loading Image Adapter with {"CPU" if self.args["joy_use_cpu"] else "GPU"}...')
         start_time = time.monotonic()
         self.image_adapter = ImageAdapter(self.clip_model.config.hidden_size, self.llm.config.hidden_size)
         self.image_adapter.load_state_dict(torch.load(self.image_adapter_path, map_location="cpu"))
@@ -185,9 +186,9 @@ class Joy:
         except ImportError as ie:
             self.logger.error(f'Import torch Failed!\nDetails: {ie}')
             raise ImportError
-        device = "cpu" if self.args.joy_use_cpu else "cuda"
+        device = "cpu" if self.args['joy_use_cpu'] else "cuda"
         # Cleaning VRAM cache
-        if not self.args.joy_use_cpu:
+        if not self.args['joy_use_cpu']:
             self.logger.info(f'Will empty cuda device cache...')
             torch.cuda.empty_cache()
         # Preprocess image
@@ -255,55 +256,55 @@ class Joy:
         return unique_content
 
     def inference(self):
-        image_paths = get_image_paths(logger=self.logger,path=Path(self.args.data_path),recursive=self.args.recursive)
+        image_paths = get_image_paths(logger=self.logger,path=Path(self.args['data_path']),recursive=self.args['recursive'])
         pbar = tqdm(total=len(image_paths), smoothing=0.0)
         for image_path in image_paths:
             try:
                 pbar.set_description('Processing: {}'.format(image_path if len(image_path) <= 40 else
                                                              image_path[:15]) + ' ... ' + image_path[-20:])
                 image = Image.open(image_path)
-                image = image_process(image, int(self.args.image_size))
+                image = image_process(image, int(self.args['image_size']))
                 self.logger.debug(f"Resized image shape: {image.shape}")
                 image = image_process_image(image)
 
                 # Change user prompt
-                if (self.args.caption_method == "both"
-                    and not self.args.joy_caption_without_wd
-                    and self.args.run_method == "queue") or (self.args.caption_method == "joy"
-                                                             and self.args.joy_read_wd_caption):
+                if (self.args['caption_method'] == "both"
+                    and not self.args['joy_caption_without_wd']
+                    and self.args['run_method'] == "queue") or (self.args['caption_method'] == "joy"
+                                                             and self.args['joy_read_wd_caption']):
                     wd_caption_file = get_caption_file_path(
                         self.logger,
-                        data_path=self.args.data_path,
+                        data_path=self.args["data_path"],
                         image_path=Path(image_path),
-                        custom_caption_save_path=self.args.custom_caption_save_path,
-                        caption_extension=self.args.wd_caption_extension
+                        custom_caption_save_path=self.args["custom_caption_save_path"],
+                        caption_extension=self.args["wd_caption_extension"]
                     )
                     self.logger.debug(f"Loading WD caption file: {wd_caption_file}")
                     with open(wd_caption_file, "r", encoding="utf-8") as wcf:
                         tag_text = wcf.read()
-                    user_prompt = str(self.args.joy_user_prompt).format(wd_tags=tag_text)
+                    user_prompt = str(self.args["joy_user_prompt"]).format(wd_tags=tag_text)
                 else:
-                    user_prompt = str(self.args.joy_user_prompt)
+                    user_prompt = str(self.args["joy_user_prompt"])
 
                 caption = self.get_caption(
                     image=image,
                     user_prompt=user_prompt,
-                    temperature=self.args.joy_temperature,
-                    max_new_tokens=self.args.joy_max_tokens
+                    temperature=self.args["joy_temperature"],
+                    max_new_tokens=self.args["joy_max_tokens"]
                 )
                 caption_file = get_caption_file_path(
                     self.logger,
-                    data_path=self.args.data_path,
+                    data_path=self.args["data_path"],
                     image_path=Path(image_path),
-                    custom_caption_save_path=self.args.custom_caption_save_path,
-                    caption_extension=self.args.joy_caption_extension
+                    custom_caption_save_path=self.args["custom_caption_save_path"],
+                    caption_extension=self.args["joy_caption_extension"]
                 )
-                if self.args.not_overwrite and os.path.isfile(caption_file):
+                if self.args["not_overwrite"] and os.path.isfile(caption_file):
                     self.logger.warning(f'Caption file {caption_file} already exist! Skip this caption.')
                     continue
 
                 with open(caption_file, "wt", encoding="utf-8") as f:
-                    f.write(caption + "\n")
+                    f.write(caption)
                 self.logger.debug(f"Image path: {image_path}")
                 self.logger.debug(f"Caption path: {caption_file}")
                 self.logger.debug(f"Caption content: {caption}")
@@ -380,29 +381,29 @@ class Tagger:
         self.logger.info(f'Loading model from {str(self.model_path)}')
 
         provider_options = None
-        if 'CUDAExecutionProvider' in ort.get_available_providers() and not self.args.wd_force_use_cpu:
+        if 'CUDAExecutionProvider' in ort.get_available_providers() and not self.args['wd_force_use_cpu']:
             providers = (['CUDAExecutionProvider'])
             self.logger.info('Use CUDA device for inference')
 
-        elif 'ROCMExecutionProvider' in ort.get_available_providers() and not self.args.wd_force_use_cpu:
+        elif 'ROCMExecutionProvider' in ort.get_available_providers() and not self.args['wd_force_use_cpu']:
             providers = (['ROCMExecutionProvider'])
             self.logger.info('Use ROCM device for inference')
 
-        elif "OpenVINOExecutionProvider" in ort.get_available_providers() and not self.args.wd_force_use_cpu:
+        elif "OpenVINOExecutionProvider" in ort.get_available_providers() and not self.args['wd_force_use_cpu']:
             providers = (["OpenVINOExecutionProvider"])
             provider_options = [{'device_type': "GPU_FP32"}]
             self.logger.info('Use OpenVINO device for inference')
 
         else:
-            if self.args.wd_force_use_cpu:
+            if self.args['wd_force_use_cpu']:
                 self.logger.warning('wd_force_use_cpu ENABLED, will only use cpu for inference!')
 
             else:
                 self.logger.info('Using CPU for inference')
-                self.args.wd_force_use_cpu = True
+                self.args['wd_force_use_cpu'] = True
             providers = (['CPUExecutionProvider'])
 
-        self.logger.info(f'Loading {self.args.wd_model_name} with {"CPU" if self.args.wd_force_use_cpu else "GPU"}...')
+        self.logger.info(f'Loading {self.args["wd_model_name"]} with {"CPU" if self.args["wd_force_use_cpu"] else "GPU"}...')
         start_time = time.monotonic()
 
         self.ort_infer_sess = ort.InferenceSession(
@@ -410,9 +411,9 @@ class Tagger:
             providers=providers,
             provider_options=provider_options
         )
-        self.logger.info(f'{self.args.wd_model_name} Loaded in {time.monotonic() - start_time:.1f}s.')
+        self.logger.info(f'{self.args["wd_model_name"]} Loaded in {time.monotonic() - start_time:.1f}s.')
         self.model_shape_size = self.ort_infer_sess.get_inputs()[0].shape[1]
-        self.logger.debug(f'"{self.args.wd_model_name}" target shape is {self.model_shape_size}')
+        self.logger.debug(f'"{self.args["wd_model_name"]}" target shape is {self.model_shape_size}')
 
         tags_csv_path = self.tags_csv_path
         if not os.path.exists(tags_csv_path):
@@ -430,19 +431,19 @@ class Tagger:
             self.logger.error(f'Unexpected csv header: {header}')
             raise ValueError
 
-        if self.args.wd_model_name.lower().startswith("wd"):
+        if self.args["wd_model_name"].lower().startswith("wd"):
             rating_tags = [row[1] for row in rows[0:] if row[2] == "9"]
             character_tags = [row[1] for row in rows[0:] if row[2] == "4"]
             general_tags = [row[1] for row in rows[0:] if row[2] == "0"]
 
         else:
-            self.logger.warning(f"{self.args.wd_model_name} doesn't support rating tags and character tags.")
+            self.logger.warning(f'{self.args["wd_model_name"]} doesn\'t support rating tags and character tags.')
             rating_tags = None
             character_tags = None
             general_tags = [row[1] for row in rows[0:]]
 
-        if self.args.wd_character_tag_expand:
-            if self.args.wd_model_name.lower().startswith("wd"):
+        if self.args["wd_character_tag_expand"]:
+            if self.args["wd_model_name"].lower().startswith("wd"):
                 self.logger.info(
                     'character_tag_expand Enabled. character tags will be expanded like `character_name, series`.')
 
@@ -455,13 +456,13 @@ class Tagger:
                             character_tag = character_tag[:-1]
                         series_tag = tags[-1].replace(")", "")
 
-                        character_tags[i] = character_tag + self.args.wd_caption_separator + series_tag
+                        character_tags[i] = character_tag + self.args["wd_caption_separator"] + series_tag
             else:
-                self.logger.warning(f"{self.args.wd_model_name} doesn't support and character tags.")
+                self.logger.warning(f'{self.args["wd_model_name"]} doesn\'t support and character tags.')
 
-        if self.args.wd_remove_underscore:
+        if self.args["wd_remove_underscore"]:
             self.logger.info('wd_remove_underscore Enabled. `_` will be replace to ` `.')
-            if self.args.wd_model_name.lower().startswith("wd"):
+            if self.args["wd_model_name"].lower().startswith("wd"):
                 rating_tags = [tag.replace("_", " ") if len(tag) > 3 and tag not in kaomojis else tag for tag in
                                rating_tags]
 
@@ -471,9 +472,9 @@ class Tagger:
             general_tags = [tag.replace("_", " ") if len(tag) > 3 and tag not in kaomojis else tag for tag in
                             general_tags]
 
-        if self.args.wd_tag_replacement is not None:
+        if self.args["wd_tag_replacement"] is not False:
             # escape , and ; in tag_replacement: wd14 tag names may contain , and ;
-            escaped_tag_replacements = self.args.wd_tag_replacement.replace("\\,", "@@@@").replace("\\;", "####")
+            escaped_tag_replacements = self.args["wd_tag_replacement"].replace("\\,", "@@@@").replace("\\;", "####")
             tag_replacements = escaped_tag_replacements.split(";")
 
             for tag_replacement in tag_replacements:
@@ -481,7 +482,7 @@ class Tagger:
 
                 if not len(tags) == 2:
                     self.logger.error(
-                        f'tag replacement must be in the format of `source,target` : {self.args.wd_tag_replacement}')
+                        f'tag replacement must be in the format of `source,target` : {self.args["wd_tag_replacement"]}')
                     raise ValueError
 
                 source, target = [tag.replace("@@@@", ",").replace("####", ";") for tag in tags]
@@ -490,10 +491,10 @@ class Tagger:
                 if source in general_tags:
                     general_tags[general_tags.index(source)] = target
 
-                elif source in character_tags and self.args.wd_model_name.lower().startswith("wd"):
+                elif source in character_tags and self.args["wd_model_name"].lower().startswith("wd"):
                     character_tags[character_tags.index(source)] = target
 
-                elif source in rating_tags and self.args.wd_model_name.lower().startswith("wd"):
+                elif source in rating_tags and self.args["wd_model_name"].lower().startswith("wd"):
                     rating_tags[rating_tags.index(source)] = target
 
         self.rating_tags = rating_tags
@@ -509,13 +510,13 @@ class Tagger:
         character_tags = self.character_tags
         general_tags = self.general_tags
 
-        caption_separator = self.args.wd_caption_separator
+        caption_separator = self.args["wd_caption_separator"]
         stripped_caption_separator = caption_separator.strip()
-        undesired_tags = self.args.wd_undesired_tags.split(stripped_caption_separator)
+        undesired_tags = self.args["wd_undesired_tags"].split(stripped_caption_separator)
         undesired_tags = set([tag.strip() for tag in undesired_tags if tag.strip() != ""])
 
-        always_first_tags = [tag for tag in self.args.wd_always_first_tags.split(stripped_caption_separator)
-                             if tag.strip() != ""] if self.args.wd_always_first_tags is not None else None
+        always_first_tags = [tag for tag in self.args["wd_always_first_tags"].split(stripped_caption_separator)
+                             if tag.strip() != ""] if self.args["wd_always_first_tags"] is not False else None
 
         input_name = self.ort_infer_sess.get_inputs()[0].name
         label_name = self.ort_infer_sess.get_outputs()[0].name
@@ -536,26 +537,26 @@ class Tagger:
         #     mcut_threshold = (sorted_probs[t] + sorted_probs[t + 1]) / 2
         #     return mcut_threshold
 
-        if not self.args.wd_model_name.lower().startswith("wd"):
-            self.logger.warning(f'"{self.args.wd_model_name}" don\'t support general_threshold and character_threshold, '
+        if not self.args["wd_model_name"].lower().startswith("wd"):
+            self.logger.warning(f'"{self.args["wd_model_name"]}" don\'t support general_threshold and character_threshold, '
                                 f'will set them to threshold value')
-            self.args.wd_general_threshold = None
-            self.args.wd_character_threshold = None
+            self.args["wd_general_threshold"] = None
+            self.args["wd_character_threshold"] = None
 
-        self.logger.debug(f'threshold: {self.args.wd_threshold}') \
-            if self.args.wd_general_threshold is None and self.args.wd_character_threshold is None else None
-        self.logger.debug(f'General threshold: {self.args.wd_general_threshold}') \
-            if self.args.wd_general_threshold is not None else None
-        self.logger.debug(f'Character threshold: {self.args.wd_character_threshold}') \
-            if self.args.wd_character_threshold is not None else None
+        self.logger.debug(f'threshold: {self.args["wd_threshold"]}') \
+            if (self.args["wd_general_threshold"] is False or self.args["wd_general_threshold"] is None) and (self.args["wd_character_threshold"] is False or self.args["wd_character_threshold"] is None) else None
+        self.logger.debug(f'General threshold: {self.args["wd_general_threshold"]}') \
+            if (self.args["wd_general_threshold"] is not False or self.args["wd_general_threshold"] is not None) else None
+        self.logger.debug(f'Character threshold: {self.args["wd_character_threshold"]}') \
+            if (self.args["wd_character_threshold"] is not False or self.args["wd_character_threshold"] is not None) else None
 
         # Set general_threshold and character_threshold to general_threshold if not they are not set
-        self.args.wd_general_threshold = self.args.wd_threshold if self.args.wd_general_threshold is None else self.args.wd_general_threshold
-        self.args.wd_character_threshold = self.args.wd_threshold \
-            if self.args.wd_character_threshold is None and self.args.wd_model_name.lower().startswith(
-            "wd") else self.args.wd_character_threshold
+        self.args["wd_general_threshold"] = self.args["wd_threshold"] if (self.args["wd_general_threshold"] is False or self.args["wd_general_threshold"] is None) else self.args["wd_general_threshold"]
+        self.args["wd_character_threshold"] = self.args["wd_threshold"] \
+            if (self.args["wd_character_threshold"] is False or self.args["wd_character_threshold"] is None) and self.args["wd_model_name"].lower().startswith(
+            "wd") else self.args["wd_character_threshold"]
 
-        # if self.args.wd_maximum_cut_threshold:
+        # if self.args["wd_maximum_cut_threshold"]:
         #     self.logger.debug('maximum_cut_threshold ENABLED!, all threshold will be overwritten.')
         #     general_prob = prob[len(rating_tags):(len(rating_tags)+len(general_tags))]
         #     general_prob = list(zip(general_tags, general_prob.astype(float)))
@@ -567,13 +568,13 @@ class Tagger:
         #
         #     general_threshold = mcut_threshold(general_prob)
         #     self.logger.debug(f'general_threshold changed from '
-        #                       f'{self.args.wd_general_threshold} to {general_threshold}')
-        #     self.args.wd_general_threshold = general_threshold
+        #                       f'{self.args["wd_general_threshold"]} to {general_threshold}')
+        #     self.args["wd_general_threshold"] = general_threshold
         #
         #     character_threshold = max(0.15, mcut_threshold(character_prob))
         #     self.logger.debug(f'character_threshold changed from '
-        #                       f'{self.args.wd_character_threshold} to {character_threshold}')
-        #     self.args.wd_character_threshold = character_threshold
+        #                       f'{self.args["wd_character_threshold"]} to {character_threshold}')
+        #     self.args["wd_character_threshold"] = character_threshold
 
         combined_tags = []
         rating_tag_text = ""
@@ -581,50 +582,50 @@ class Tagger:
         general_tag_text = ""
 
         # First 4 labels are ratings, the rest are tags: pick anywhere prediction confidence >= threshold
-        for i, p in enumerate(prob[len(rating_tags):] if self.args.wd_model_name.lower().startswith("wd") else prob):
-            if i < len(general_tags) and p >= self.args.wd_general_threshold:
+        for i, p in enumerate(prob[len(rating_tags):] if self.args["wd_model_name"].lower().startswith("wd") else prob):
+            if i < len(general_tags) and p >= self.args["wd_general_threshold"]:
                 tag_name = general_tags[i]
 
                 if tag_name not in undesired_tags:
-                    if self.args.wd_tags_frequency:
+                    if self.args["wd_tags_frequency"]:
                         self.tag_freq[tag_name] = self.tag_freq.get(tag_name, 0) + 1
 
                     general_tag_text += caption_separator + tag_name
                     combined_tags.append(tag_name)
 
-            elif (self.args.wd_character_threshold is not None
-                  and i >= len(general_tags) and p >= self.args.wd_character_threshold):
+            elif (self.args["wd_character_threshold"] is not None
+                  and i >= len(general_tags) and p >= self.args["wd_character_threshold"]):
                 tag_name = character_tags[i - len(general_tags)]
 
                 if tag_name not in undesired_tags:
-                    if self.args.wd_tags_frequency:
+                    if self.args["wd_tags_frequency"]:
                         self.tag_freq[tag_name] = self.tag_freq.get(tag_name, 0) + 1
 
                     character_tag_text += caption_separator + tag_name
 
-                    if self.args.wd_character_tags_first:  # insert to the beginning
+                    if self.args["wd_character_tags_first"]:  # insert to the beginning
                         combined_tags.insert(0, tag_name)
 
                     else:
                         combined_tags.append(tag_name)
 
         # First 4 labels are actually ratings: pick one with argmax
-        if self.args.wd_add_rating_tags_to_first or self.args.wd_add_rating_tags_to_last:
-            if self.args.wd_model_name.lower().startswith("wd"):
+        if self.args["wd_add_rating_tags_to_first"] or self.args["wd_add_rating_tags_to_last"]:
+            if self.args["wd_model_name"].lower().startswith("wd"):
                 ratings_probs = prob[:4]
                 rating_index = ratings_probs.argmax()
                 found_rating = rating_tags[rating_index]
 
                 if found_rating not in undesired_tags:
-                    if self.args.wd_tags_frequency:
+                    if self.args["wd_tags_frequency"]:
                         self.tag_freq[found_rating] = self.tag_freq.get(found_rating, 0) + 1
                     rating_tag_text = found_rating
-                    if self.args.wd_add_rating_tags_to_first:
+                    if self.args["wd_add_rating_tags_to_first"]:
                         combined_tags.insert(0, found_rating)  # insert to the beginning
                     else:
                         combined_tags.append(found_rating)
             else:
-                self.logger.warning(f"{self.args.wd_model_name} doesn't support rating tags.")
+                self.logger.warning(f'{self.args["wd_model_name"]} doesn\t support rating tags.')
 
         # Always put some tags at the beginning
         if always_first_tags is not None:
@@ -645,7 +646,7 @@ class Tagger:
 
 
     def inference(self):
-        image_paths = get_image_paths(logger=self.logger,path=Path(self.args.data_path),recursive=self.args.recursive)
+        image_paths = get_image_paths(logger=self.logger,path=Path(self.args["data_path"]),recursive=self.args["recursive"])
         pbar = tqdm(total=len(image_paths), smoothing=0.0)
         for image_path in image_paths:
             try:
@@ -660,21 +661,21 @@ class Tagger:
                 )
                 caption_file = get_caption_file_path(
                     self.logger,
-                    data_path=self.args.data_path,
+                    data_path=self.args["data_path"],
                     image_path=Path(image_path),
-                    custom_caption_save_path=self.args.custom_caption_save_path,
-                    caption_extension=self.args.wd_caption_extension
+                    custom_caption_save_path=self.args["custom_caption_save_path"],
+                    caption_extension=self.args["wd_caption_extension"]
                 )
-                if self.args.not_overwrite and os.path.isfile(caption_file):
+                if self.args["not_overwrite"] and os.path.isfile(caption_file):
                     self.logger.warning(f'Caption file {caption_file} already exist! Skip this caption.')
                     continue
 
                 with open(caption_file, "wt", encoding="utf-8") as f:
-                    f.write(tag_text + "\n")
+                    f.write(tag_text)
 
                 self.logger.debug(f"Image path: {image_path}")
                 self.logger.debug(f"Caption path: {caption_file}")
-                if self.args.wd_model_name.lower().startswith("wd"):
+                if self.args["wd_model_name"].lower().startswith("wd"):
                     self.logger.debug(f"Rating tags: {rating_tag_text}")
                     self.logger.debug(f"Character tags: {character_tag_text}")
                 self.logger.debug(f"General tags: {general_tag_text}")
@@ -686,7 +687,7 @@ class Tagger:
             pbar.update(1)
         pbar.close()
 
-        if self.args.wd_tags_frequency:
+        if self.args["wd_tags_frequency"]:
             sorted_tags = sorted(self.tag_freq.items(), key=lambda x: x[1], reverse=True)
             self.logger.info('Tag frequencies:')
             for tag, freq in sorted_tags:
@@ -695,7 +696,7 @@ class Tagger:
     def unload_model(self) -> bool:
         unloaded = False
         if self.ort_infer_sess is not None:
-            self.logger.info(f'Unloading model {self.args.wd_model_name}...')
+            self.logger.info(f'Unloading model {self.args["wd_model_name"]}...')
             start = time.monotonic()
             del self.ort_infer_sess
             if self.rating_tags is not None:
@@ -704,7 +705,7 @@ class Tagger:
                 del self.character_tags
             if self.general_tags is not None:
                 del self.general_tags
-            self.logger.info(f'{self.args.wd_model_name} unloaded in {time.monotonic() - start:.1f}s.')
+            self.logger.info(f'{self.args["wd_model_name"]} unloaded in {time.monotonic() - start:.1f}s.')
             del self.model_path
             del self.tags_csv_path
             del self.args
