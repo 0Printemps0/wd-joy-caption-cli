@@ -282,9 +282,9 @@ class Joy:
                     self.logger.debug(f"Loading WD caption file: {wd_caption_file}")
                     with open(wd_caption_file, "r", encoding="utf-8") as wcf:
                         tag_text = wcf.read()
-                    user_prompt = str(self.args["joy_user_prompt"]).format(wd_tags=tag_text)
+                    user_prompt = str(f'{self.args["joy_user_prompt"]}{tag_text}\n')
                 else:
-                    user_prompt = str(self.args["joy_user_prompt"])
+                    user_prompt = str(f'{self.args["joy_user_prompt"]}\n')
 
                 caption = self.get_caption(
                     image=image,

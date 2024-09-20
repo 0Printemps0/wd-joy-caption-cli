@@ -11,14 +11,9 @@ from utils.image import get_image_paths, image_process, image_process_image, ima
 from utils.inference import Joy, Tagger, get_caption_file_path
 from utils.logger import Logger
 
-DEFAULT_USER_PROMPT_WITH_WD = """
-As an AI experiment assistant, you need to provide descriptive text for the image data. The more accurate the description, the more helpful it is for the experiment. Please concise your description to limit the number of words and only choose the most accurate expression. Before generating the description, I will give you some tips about the following picture:
-{wd_tags}.\n
-"""
+DEFAULT_USER_PROMPT_WITH_WD = "As an AI experiment assistant, you need to provide descriptive text for the image data. The more accurate the description, the more helpful it is for the experiment. Please concise your description to limit the number of words and only choose the most accurate expression. Before generating the description, I will give you some tips about the following picture:"
 
-DEFAULT_USER_PROMPT_WITHOUT_WD = """
-Write a descriptive caption for this image:\n
-"""
+DEFAULT_USER_PROMPT_WITHOUT_WD = "As an AI experiment assistant, you need to provide descriptive text for the image data. The more accurate the description, the more helpful it is for the experiment. Please concise your description to limit the number of words and only choose the most accurate expression. "
 
 def load_config(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
@@ -129,17 +124,17 @@ def main(args):
         )
         my_joy.load_model()
 
+    # Set joy user prompt
+    if not args['joy_user_prompt']:
+        args['joy_user_prompt'] = DEFAULT_USER_PROMPT_WITHOUT_WD
+
+    if args['joy_user_prompt'] == DEFAULT_USER_PROMPT_WITHOUT_WD:
+        if not args['joy_caption_without_wd']:
+            my_logger.info(f"Joy user prompt not defined, using default version with wd tags...")
+            args['joy_user_prompt'] = DEFAULT_USER_PROMPT_WITH_WD
+
     # Inference
     if use_wd and use_joy:
-        # Set joy user prompt
-        if args['joy_user_prompt'] == "DEFAULT_USER_PROMPT_WITHOUT_WD":
-            args['joy_user_prompt'] = DEFAULT_USER_PROMPT_WITHOUT_WD
-
-        if args['joy_user_prompt'] == DEFAULT_USER_PROMPT_WITHOUT_WD:
-            if not args['joy_caption_without_wd']:
-                my_logger.info(f"Joy user prompt not defined, using default version with wd tags...")
-                args['joy_user_prompt'] = DEFAULT_USER_PROMPT_WITH_WD
-        # run
         if args['run_method']=="sync":
             image_paths = get_image_paths(logger=my_logger,path=Path(args['data_path']),recursive=args['recursive'])
             pbar = tqdm(total=len(image_paths), smoothing=0.0)
@@ -167,7 +162,7 @@ def main(args):
                         continue
 
                     with open(wd_config_file, "wt", encoding="utf-8") as f:
-                        f.write(tag_text + "\n")
+                        f.write(tag_text)
 
                     my_logger.debug(f"Image path: {image_path}")
                     my_logger.debug(f"WD Caption path: {wd_config_file}")
@@ -182,7 +177,7 @@ def main(args):
                     joy_image = image_process_image(joy_image)
                     caption = my_joy.get_caption(
                         image=joy_image,
-                        user_prompt=str(args['joy_user_prompt']).format(wd_tags=tag_text),
+                        user_prompt=str(f'{args["joy_user_prompt"]}{tag_text}\n') if not args['joy_caption_without_wd'] else str(f'{args["joy_user_prompt"]}\n'),
                         temperature=args['joy_temperature'],
                         max_new_tokens=args['joy_max_tokens']
                     )
@@ -198,7 +193,7 @@ def main(args):
                         continue
 
                     with open(joy_caption_file, "wt", encoding="utf-8") as f:
-                        f.write(caption + "\n")
+                        f.write(caption)
                         my_logger.debug(f"Image path: {image_path}")
                         my_logger.debug(f"Joy Caption path: {joy_caption_file}")
                         my_logger.debug(f"Joy Caption content: {caption}")
@@ -216,27 +211,26 @@ def main(args):
                 my_logger.info('WD Tag frequencies:')
                 for tag, freq in sorted_tags:
                     my_logger.info(f'{tag}: {freq}')
+            my_tagger.unload_model()
+            my_joy.unload_model()
         else:
             pbar = tqdm(total=2, smoothing=0.0)
             pbar.set_description('Processing with WD model...')
             my_tagger.inference()
             pbar.update(1)
-            pbar.set_description('Processing with WD model...')
+            my_tagger.unload_model()
+            pbar.set_description('Processing with Joy model...')
             my_joy.inference()
             pbar.update(1)
             pbar.close()
+            my_joy.unload_model()
     else:
         if use_wd and not use_joy:
             my_tagger.inference()
+            my_tagger.unload_model()
         elif not use_wd and use_joy:
             my_joy.inference()
-
-    if use_wd:
-        # Unload models
-        my_tagger.unload_model()
-    if use_joy:
-        # Unload models
-        my_joy.unload_model()
+            my_joy.unload_model()
 
 if __name__ == "__main__":
     config = load_config('config.toml')
