@@ -50,27 +50,24 @@ echo Installing deps...
 pip install -U -r requirements.txt
 
 echo Select dependencies to install:
-echo 1. WD Caption (Base)
-echo 2. WD Caption (CUDA 12.X)
-echo 3. WD Caption (CPU)
-echo 4. Joy Caption
-echo 5. Huggingface Hub
-echo 6. Modelscope Hub
+echo 1. WD Caption (CUDA 12.X)
+echo 2. WD Caption (CPU)
+echo 3. Joy Caption
+echo 4. Huggingface Hub
+echo 5. Modelscope Hub
 
 set /p choices=Enter your choices (e.g., 1 2 3): 
 
 for %%i in (%choices%) do (
     if %%i==1 (
-        call :install_wd_base
-    ) else if %%i==2 (
         call :install_wd_cu12x
-    ) else if %%i==3 (
+    ) else if %%i==2 (
         call :install_wd_cpu
-    ) else if %%i==4 (
+    ) else if %%i==3 (
         call :install_joy
-    ) else if %%i==5 (
+    ) else if %%i==4 (
         call :install_huggingface
-    ) else if %%i==6 (
+    ) else if %%i==5 (
         call :install_modelscope
     ) else (
         echo Invalid option: %%i
@@ -78,11 +75,6 @@ for %%i in (%choices%) do (
 )
 
 goto :eof
-
-:install_wd_base
-echo Installing WD Caption dependencies...
-pip install onnx==1.16.2
-goto :continue
 
 :install_wd_cu12x
 echo Installing WD Caption (CUDA 12.X) dependencies...

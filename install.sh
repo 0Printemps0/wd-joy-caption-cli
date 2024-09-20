@@ -81,7 +81,6 @@ read -p "Enter your choices (e.g., 1 2 3): " choices
 
 install_wd() {
     echo "Installing WD Caption dependencies..."
-    pip install onnx==1.16.2
 }
 
 install_joy() {

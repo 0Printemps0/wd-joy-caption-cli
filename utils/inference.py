@@ -372,7 +372,6 @@ class Tagger:
             raise FileNotFoundError
         # Import ONNX
         try:
-            import onnx
             import onnxruntime as ort
         except ImportError as ie:
             self.logger.error(f'Import ONNX Failed!\nDetails: {ie}')
