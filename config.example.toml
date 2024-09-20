@@ -1,128 +1,102 @@
-# 数据路径
+######### 数据路径相关设置 #########
+# 待处理图像数据路径
 data_path = "path/to/your/input"
-
-# 是否递归搜索子目录
+# 自定义输出文件保存路径
+custom_caption_save_path = ""
+# 是否递归搜索子路径及其子路径中包含所有支持的图像格式
 recursive = false
-
-# 日志级别
-log_level = "INFO"
-
-# 是否保存日志
-save_logs = false
-
-# 模型站点
-model_site = "huggingface"
-
-# 模型保存路径
-models_save_path = "models"
-
-# 是否使用SDK缓存
-use_sdk_cache = false
-
-# 下载方法
-download_method = "SDK"
-
-# 是否强制下载
-force_download = false
-
-# 是否跳过下载
-skip_download = false
-
-# WD配置文件
-wd_config = "default_wd.json"
-
-# WD模型名称
-wd_model_name = "wd-eva02-large-tagger-v3"
-
-# 是否强制使用CPU
-wd_force_use_cpu = false
-
-# WD字幕扩展名
-wd_caption_extension = ".wdcaption"
-
-# 是否移除下划线
-wd_remove_underscore = true
-
-# 不需要的标签
-wd_undesired_tags = ""
-
-# 是否统计标签频率
-wd_tags_frequency = false
-
-# 标签阈值
-wd_threshold = 0.35
-
-# 通用标签阈值
-wd_general_threshold = false
-
-# 角色标签阈值
-wd_character_threshold = false
-
-# 是否将评分标签添加到第一个
-wd_add_rating_tags_to_first = false
-
-# 是否将评分标签添加到最后一个
-wd_add_rating_tags_to_last = false
-
-# 角色标签是否优先
-wd_character_tags_first = false
-
-# 总是优先的标签
-wd_always_first_tags = false
-
-# 字幕分隔符
-wd_caption_separator = ", "
-
-# 标签替换
-wd_tag_replacement = false
-
-# 是否扩展角色标签
-wd_character_tag_expand = false
-
-# Joy配置文件
-joy_config = "default_joy.json"
-
-# Joy模型名称
-joy_model_name = "Joy-Caption-Pre-Alpha"
-
-# 是否使用CPU
-joy_use_cpu = false
-
-# LLM数据类型
-joy_llm_dtype = "fp16"
-
-# LLM量化
-joy_llm_qnt = "none"
-
-# Joy字幕扩展名
-joy_caption_extension = ".txt"
-
-# 是否读取WD字幕
-joy_read_wd_caption = false
-
-# 是否在没有WD的情况下生成字幕
-joy_caption_without_wd = false
-
-# 用户提示
-joy_user_prompt = ""
-
-# 温度参数
-joy_temperature = 0.5
-
-# 最大tokens数量
-joy_max_tokens = 300
-
-# 字幕方法
-caption_method = "both"
-
-# 运行方法
-run_method = "queue"
-
-# 图像大小
-image_size = 1024
-
 # 是否不覆盖现有文件
 not_overwrite = false
 
-# 自定义字幕保存路径
-custom_caption_save_path = ""
+
+######### 日志相关设置 #########
+# 日志级别，可选["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+log_level = "INFO"
+# 是否保存日志，日志将保存在与data_path相同级别的路径中
+save_logs = false
+
+
+######### 模型下载相关设置 #########
+# 模型下载站点,可选["huggingface", "modelscope"]
+model_site = "huggingface"
+# 模型保存路径
+models_save_path = "models"
+# 是否强制下载
+force_download = false
+# 是否跳过下载
+skip_download = false
+# 下载模型方法，可选["SDK", "URL"]，如果通过SDK下载失败，将自动通过URL重试
+download_method = "SDK"
+# 是否使用SDK的缓存目录来存储模型。如果启用此选项，models_save_path将被忽略
+use_sdk_cache = false
+
+
+######### WD设置选项 #########
+# WD配置文件
+wd_config = "default_wd.json"
+# WD模型名称，可选列表位于WD配置文件中
+wd_model_name = "wd-eva02-large-tagger-v3"
+# 是否WD模型强制使用CPU
+wd_force_use_cpu = false
+# WD标签扩展名
+wd_caption_extension = ".wdcaption"
+# 是否移除下划线
+wd_remove_underscore = true
+# 从输出中删除的的标签，以逗号分隔
+wd_undesired_tags = ""
+# 是否统计标签频率
+wd_tags_frequency = false
+# 是否将评分标签添加到第一个
+wd_add_rating_tags_to_first = false
+# 是否将评分标签添加到最后一个
+wd_add_rating_tags_to_last = false
+# 角色标签是否优先
+wd_character_tags_first = false
+# 总是优先的标签
+wd_always_first_tags = false
+# 标签分隔符
+wd_caption_separator = ", "
+# 标签替换，格式为 source1,target1;source2,target2; ...
+wd_tag_replacement = false
+# 是否将标签尾括号扩展为角色标签的另一个标签
+# 例如：character_name_(series)将扩展为character_name, series
+wd_character_tag_expand = false
+# 标签置信度阈值
+wd_threshold = 0.35
+# 通用标签置信度阈值，如果为false则与 wd_threshold 相同
+wd_general_threshold = false
+# 角色标签置信度阈值，如果为false则与 wd_threshold 相同
+wd_character_threshold = false
+
+
+######### Joy设置选项 #########
+# Joy配置文件
+joy_config = "default_joy.json"
+# Joy模型名称，可选列表位于Joy配置文件中
+joy_model_name = "Joy-Caption-Pre-Alpha"
+# 是否Joy模型强制使用CPU
+joy_use_cpu = false
+# 调整CLIP识别的图像大小
+image_size = 1024
+# Joy LLM的精度类型，可选["fp16", "bf16"]
+joy_llm_dtype = "fp16"
+# 为Joy LLM启用量化，可选["none","4bit", "8bit"]
+joy_llm_qnt = "none"
+# Joy字幕扩展名
+joy_caption_extension = ".txt"
+# 是否读取WD标签
+joy_read_wd_caption = true
+# 是否在忽略WD的标签下生成字幕
+joy_caption_without_wd = false
+# 控制LLM预测的随机性。较低的值使输出更加集中和确定性，而较高的值会增加随机性
+joy_temperature = 0.5
+# LLM输出的最大tokens数量
+joy_max_tokens = 300
+# 标注方法，可选["both","wd","joy"]，选择WD或Joy模型，或者两者都使用
+caption_method = "both"
+# wd+joy的运行方法，可选["sync", "queue"]，需要将caption_method设置为 `both`
+# 如果设置为"sync"，每个图像将使用WD模型添加标签，然后使用Joy模型添加字幕，再轮到下一张图像
+# 如果设置为"queue"，所有图像将首先使用WD模型进行标签，然后使用Joy模型对所有图像进行字幕
+run_method = "queue"
+# 自定义LLM预设提示词
+joy_user_prompt = ""
