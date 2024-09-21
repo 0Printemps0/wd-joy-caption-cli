@@ -88,7 +88,7 @@ def main(args):
     if use_joy:
         # Check joy models path from json
         joy_config_file = os.path.join(Path(__file__).parent, 'configs', 'default_joy.json') \
-            if args['joy_config'] == "default_joy.json" else Path(args['joy_config'])
+            if args['joy_config'] == "default_joy.json" else Path('configs') / args['joy_config']
 
         # Download joy models
         image_adapter_path, clip_path, llm_path = download_joy(

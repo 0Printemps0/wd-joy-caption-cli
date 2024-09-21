@@ -70,9 +70,9 @@ wd_character_threshold = false
 
 
 ######### Joy设置选项 #########
-# Joy配置文件
+# Joy配置文件，可选["default_joy.json", "uncensored_joy.json"]，和Joy模型列表对应
 joy_config = "default_joy.json"
-# Joy模型名称，可选列表位于Joy配置文件中
+# Joy模型名称，可选["Joy-Caption-Pre-Alpha", "Joy-Caption-Uncensored"]，和Joy配置文件列表对应
 joy_model_name = "Joy-Caption-Pre-Alpha"
 # 是否Joy模型强制使用CPU
 joy_use_cpu = false
