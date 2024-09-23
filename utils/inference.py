@@ -299,12 +299,27 @@ class Joy:
                     custom_caption_save_path=self.args["custom_caption_save_path"],
                     caption_extension=self.args["joy_caption_extension"]
                 )
-                if self.args["not_overwrite"] and os.path.isfile(caption_file):
-                    self.logger.warning(f'Caption file {caption_file} already exist! Skip this caption.')
-                    continue
-
-                with open(caption_file, "wt", encoding="utf-8") as f:
-                    f.write(caption)
+                if os.path.isfile(caption_file):
+                    if self.args["joy_file_action"] == "skip":
+                        self.logger.warning(f'Caption file {caption_file} already exists! Skip this caption.')
+                        continue
+                    elif self.args["joy_file_action"] == "prepend":
+                        with open(caption_file, "rt", encoding="utf-8") as f:
+                            existing_content = f.read()
+                        with open(caption_file, "wt", encoding="utf-8") as f:
+                            f.write(caption + existing_content)
+                        continue
+                    elif self.args["joy_file_action"] == "append":
+                        with open(caption_file, "at", encoding="utf-8") as f:
+                            f.write(caption)
+                        continue
+                    elif self.args["joy_file_action"] == "overwrite":
+                        with open(caption_file, "wt", encoding="utf-8") as f:
+                            f.write(caption)
+                        continue
+                else:
+                    with open(caption_file, "wt", encoding="utf-8") as f:
+                        f.write(caption)
                 self.logger.debug(f"Image path: {image_path}")
                 self.logger.debug(f"Caption path: {caption_file}")
                 self.logger.debug(f"Caption content: {caption}")
@@ -665,12 +680,27 @@ class Tagger:
                     custom_caption_save_path=self.args["custom_caption_save_path"],
                     caption_extension=self.args["wd_caption_extension"]
                 )
-                if self.args["not_overwrite"] and os.path.isfile(caption_file):
-                    self.logger.warning(f'Caption file {caption_file} already exist! Skip this caption.')
-                    continue
-
-                with open(caption_file, "wt", encoding="utf-8") as f:
-                    f.write(tag_text)
+                if os.path.isfile(caption_file):
+                    if self.args["wd_file_action"] == "skip":
+                        self.logger.warning(f'Caption file {caption_file} already exists! Skip this caption.')
+                        continue
+                    elif self.args["wd_file_action"] == "prepend":
+                        with open(caption_file, "rt", encoding="utf-8") as f:
+                            existing_content = f.read()
+                        with open(caption_file, "wt", encoding="utf-8") as f:
+                            f.write(tag_text + existing_content)
+                        continue
+                    elif self.args["wd_file_action"] == "append":
+                        with open(caption_file, "at", encoding="utf-8") as f:
+                            f.write(tag_text)
+                        continue
+                    elif self.args["wd_file_action"] == "overwrite":
+                        with open(caption_file, "wt", encoding="utf-8") as f:
+                            f.write(tag_text)
+                        continue
+                else:
+                    with open(caption_file, "wt", encoding="utf-8") as f:
+                        f.write(tag_text)
 
                 self.logger.debug(f"Image path: {image_path}")
                 self.logger.debug(f"Caption path: {caption_file}")

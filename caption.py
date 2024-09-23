@@ -157,12 +157,27 @@ def main(args):
                         custom_caption_save_path=args['custom_caption_save_path'],
                         caption_extension=args['wd_caption_extension']
                     )
-                    if args['not_overwrite'] and os.path.isfile(wd_config_file):
-                        my_logger.warning(f'WD Caption file {wd_config_file} already exist! Skip this caption.')
-                        continue
-
-                    with open(wd_config_file, "wt", encoding="utf-8") as f:
-                        f.write(tag_text)
+                    if os.path.isfile(wd_config_file):
+                        if args["wd_file_action"] == "skip":
+                            my_logger.warning(f'Caption file {wd_config_file} already exists! Skip this caption.')
+                            continue
+                        elif args["wd_file_action"] == "prepend":
+                            with open(wd_config_file, "rt", encoding="utf-8") as f:
+                                existing_content = f.read()
+                            with open(wd_config_file, "wt", encoding="utf-8") as f:
+                                f.write(tag_text + existing_content)
+                            continue
+                        elif args["wd_file_action"] == "append":
+                            with open(wd_config_file, "at", encoding="utf-8") as f:
+                                f.write(tag_text)
+                            continue
+                        elif args["wd_file_action"] == "overwrite":
+                            with open(wd_config_file, "wt", encoding="utf-8") as f:
+                                f.write(tag_text)
+                            continue
+                    else:
+                        with open(wd_config_file, "wt", encoding="utf-8") as f:
+                            f.write(tag_text)
 
                     my_logger.debug(f"Image path: {image_path}")
                     my_logger.debug(f"WD Caption path: {wd_config_file}")
@@ -188,12 +203,27 @@ def main(args):
                         custom_caption_save_path=args['custom_caption_save_path'],
                         caption_extension=args['joy_caption_extension']
                     )
-                    if args['not_overwrite'] and os.path.isfile(joy_caption_file):
-                        my_logger.warning(f'Caption file {joy_caption_file} already exist! Skip this caption.')
-                        continue
-
-                    with open(joy_caption_file, "wt", encoding="utf-8") as f:
-                        f.write(caption)
+                    if os.path.isfile(joy_caption_file):
+                        if args["joy_file_action"] == "skip":
+                            my_logger.warning(f'Caption file {joy_caption_file} already exists! Skip this caption.')
+                            continue
+                        elif args["joy_file_action"] == "prepend":
+                            with open(joy_caption_file, "rt", encoding="utf-8") as f:
+                                existing_content = f.read()
+                            with open(joy_caption_file, "wt", encoding="utf-8") as f:
+                                f.write(caption + existing_content)
+                            continue
+                        elif args["joy_file_action"] == "append":
+                            with open(joy_caption_file, "at", encoding="utf-8") as f:
+                                f.write(caption)
+                            continue
+                        elif args["joy_file_action"] == "overwrite":
+                            with open(joy_caption_file, "wt", encoding="utf-8") as f:
+                                f.write(caption)
+                            continue
+                    else:
+                        with open(joy_caption_file, "wt", encoding="utf-8") as f:
+                            f.write(caption)
                         my_logger.debug(f"Image path: {image_path}")
                         my_logger.debug(f"Joy Caption path: {joy_caption_file}")
                         my_logger.debug(f"Joy Caption content: {caption}")
