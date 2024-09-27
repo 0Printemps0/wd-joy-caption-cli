@@ -1,5 +1,5 @@
 # WD LLM Caption Cli
-A Python base cli tool for caption images with [WD series](https://huggingface.co/SmilingWolf) and [joy-caption-pre-alpha](https://huggingface.co/spaces/fancyfeast/joy-caption-pre-alpha) models.
+A Python base cli tool for caption images with [WD series](https://huggingface.co/SmilingWolf), [joy-caption-pre-alpha](https://huggingface.co/spaces/fancyfeast/joy-caption-pre-alpha) and [LLama3.2 Vision Instruct](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct) models.
 ## Introduce
 If you want to caption a training datasets for Image generation model(Stable Diffusion, Flux, Kolors or others)
 This tool can make a caption with danbooru style tags or a nature language description.
@@ -70,9 +70,10 @@ Hugging Face are original sources, modelscope are pure forks from Hugging Face(B
 |         Meta-Llama-3.1-8B         |        [Hugging Face](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B)        |        [ModelScope](https://www.modelscope.cn/models/fireicewolf/Meta-Llama-3.1-8B)        |
 |  Llama-3.1-8B-Lexi-Uncensored-V2  | [Hugging Face](https://huggingface.co/Orenguteng/Llama-3.1-8B-Lexi-Uncensored-V2) | [ModelScope](https://www.modelscope.cn/models/fireicewolf/Llama-3.1-8B-Lexi-Uncensored-V2) |
 ### Llama 3.2 Vision Instruct models
-|               Model               |                                 Hugging Face Link                                 |                                      ModelScope Link                                       |
-|:---------------------------------:|:---------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------:|
-|  Llama-3.2-11B-Vision-Instruct  | [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct) | [ModelScope](https://www.modelscope.cn/models/fireicewolf/Llama-3.2-11B-Vision-Instruct) |
+|             Model             |                                Hugging Face Link                                |                                     ModelScope Link                                      |
+|:-----------------------------:|:-------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------:|
+| Llama-3.2-11B-Vision-Instruct | [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct) | [ModelScope](https://www.modelscope.cn/models/fireicewolf/Llama-3.2-11B-Vision-Instruct) |
+| Llama-3.2-90B-Vision-Instruct | [Hugging Face](https://huggingface.co/meta-llama/Llama-3.2-90B-Vision-Instruct) | [ModelScope](https://www.modelscope.cn/models/fireicewolf/Llama-3.2-90B-Vision-Instruct) |
 ## TO-DO
 make a simple ui by Jupyter widget(When my lazy cancer cured😊)
 ## Installation
@@ -332,5 +333,5 @@ custom caption file save path.
 </details>
 
 ## Credits
-Base on [SmilingWolf/wd-tagger](https://huggingface.co/spaces/SmilingWolf/wd-tagger/blob/main/app.py) and [joy-caption-pre-alpha](https://huggingface.co/spaces/fancyfeast/joy-caption-pre-alpha)
+Base on [SmilingWolf/wd-tagger](https://huggingface.co/spaces/SmilingWolf/wd-tagger/blob/main/app.py), [joy-caption-pre-alpha](https://huggingface.co/spaces/fancyfeast/joy-caption-pre-alpha) and [meta-llama/Llama-3.2-11B-Vision-Instruct](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct)
 Without their works(👏👏), this repo won't exist.
