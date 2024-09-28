@@ -85,11 +85,11 @@ def download_models(
         with open(config_file, 'r', encoding='utf-8') as config_json:
             datas = json.load(config_json)
             if models_type == "wd":
-                model_name = list(datas.keys())[0] if args.wd_model_name is None else args.wd_model_name
-                args.wd_model_name = model_name
+                model_name = list(datas.keys())[0] if args['wd_model_name'] is None else args['wd_model_name']
+                args['wd_model_name'] = model_name
             elif models_type in ["joy", "llama"]:
-                model_name = list(datas.keys())[0] if args.llm_model_name is None else args.llm_model_name
-                args.llm_model_name = model_name
+                model_name = list(datas.keys())[0] if args['llm_model_name'] is None else args['llm_model_name']
+                args['llm_model_name'] = model_name
             else:
                 logger.error("Invalid model type!")
                 raise ValueError
@@ -102,9 +102,9 @@ def download_models(
     model_name, model_info = read_json(config_file)
     models_save_path = Path(os.path.join(models_save_path, model_name))
 
-    if args.use_sdk_cache:
+    if args['use_sdk_cache']:
         logger.warning('use_sdk_cache ENABLED! download_method force to use "SDK" and models_save_path will be ignored')
-        args.download_method = 'sdk'
+        args['download_method'] = 'sdk'
     else:
         logger.info(f'Models will be stored in {str(models_save_path)}.')
 
@@ -197,12 +197,12 @@ def download_models(
 
     models_path = download_choice(
         model_info=model_info,
-        model_site=str(args.model_site),
+        model_site=str(args['model_site']),
         models_save_path=Path(models_save_path),
-        download_method=str(args.download_method).lower(),
-        use_sdk_cache=args.use_sdk_cache,
-        skip_local_file_exist=args.skip_download,
-        force_download=args.force_download
+        download_method=str(args['download_method']).lower(),
+        use_sdk_cache=args['use_sdk_cache'],
+        skip_local_file_exist=args['skip_download'],
+        force_download=args['force_download']
     )
 
     if models_type == "wd":

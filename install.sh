@@ -73,7 +73,7 @@ echo "Installing deps..."
 pip install -U -r requirements.txt
 echo "Select dependencies to install:"
 echo "1. WD Caption"
-echo "2. Joy Caption"
+echo "2. LLM Caption"
 echo "3. Huggingface Hub"
 echo "4. Modelscope Hub"
 
@@ -83,32 +83,32 @@ install_wd() {
     echo "Installing WD Caption dependencies..."
 }
 
-install_joy() {
-    echo "Installing Joy Caption dependencies..."
-    pip install accelerate==0.33.0
-    pip install bitsandbytes==0.43.3
-    pip install transformers==4.44.2
+install_llm() {
+    echo "Installing LLM Caption dependencies..."
+    pip install accelerate==0.34.2
+    pip install bitsandbytes==0.44.0
+    pip install transformers==4.45.0
     pip install sentencepiece==0.2.0
 }
 
 install_huggingface() {
     echo "Installing Huggingface Hub dependencies..."
-    pip install huggingface_hub==0.24.6
+    pip install huggingface_hub==0.25.1
 }
 
 install_modelscope() {
     echo "Installing Modelscope Hub dependencies..."
-    pip install modelscope==1.17.1
+    pip install modelscope==1.18.1
 }
 
 install_wd_cu12x() {
     echo "Installing WD Caption (CUDA 12.X) dependencies..."
-    pip install onnxruntime-gpu==1.19.0
+    pip install onnxruntime-gpu==1.19.2
 }
 
 install_wd_cpu() {
     echo "Installing WD Caption (CUDA 12.X) dependencies..."
-    pip install onnxruntime==1.19.0
+    pip install onnxruntime==1.19.2
 }
 
 for choice in $choices; do
@@ -128,7 +128,7 @@ for choice in $choices; do
                     ;;
             esac
             ;;
-        2) install_joy ;;
+        2) install_llm ;;
         3) install_huggingface ;;
         4) install_modelscope ;;
         *)

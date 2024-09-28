@@ -14,16 +14,16 @@ goto parse_args
 
 :args_parsed
 
-if %create_venv% equ false goto ::skip_venv
-if exist venv goto ::activate_venv
+if %create_venv% equ false goto skip_venv
+if exist venv goto activate_venv
 
 echo Creating python venv...
 python -m venv venv
 
-::activate_venv
+:activate_venv
 call "%script_dir%venv\Scripts\activate"
 echo active venv
-::skip_venv
+:skip_venv
 
 echo Installing torch...
 echo Select the torch version to install:
@@ -52,7 +52,7 @@ pip install -U -r requirements.txt
 echo Select dependencies to install:
 echo 1. WD Caption (CUDA 12.X)
 echo 2. WD Caption (CPU)
-echo 3. Joy Caption
+echo 3. LLM Caption
 echo 4. Huggingface Hub
 echo 5. Modelscope Hub
 
@@ -64,7 +64,7 @@ for %%i in (%choices%) do (
     ) else if %%i==2 (
         call :install_wd_cpu
     ) else if %%i==3 (
-        call :install_joy
+        call :install_llm
     ) else if %%i==4 (
         call :install_huggingface
     ) else if %%i==5 (
@@ -78,30 +78,30 @@ goto :eof
 
 :install_wd_cu12x
 echo Installing WD Caption (CUDA 12.X) dependencies...
-pip install onnxruntime-gpu==1.19.0
+pip install onnxruntime-gpu==1.19.2
 goto :continue
 
 :install_wd_cpu
 echo Installing WD Caption (CPU) dependencies...
-pip install onnxruntime==1.19.0
+pip install onnxruntime==1.19.2
 goto :continue
 
-:install_joy
-echo Installing Joy Caption dependencies...
-pip install accelerate==0.33.0
-pip install bitsandbytes==0.43.3
-pip install transformers==4.44.2
+:install_llm
+echo Installing LLM Caption dependencies...
+pip install accelerate==0.34.2
+pip install bitsandbytes==0.44.0
+pip install transformers==4.45.0
 pip install sentencepiece==0.2.0
 goto :continue
 
 :install_huggingface
 echo Installing Huggingface Hub dependencies...
-pip install huggingface_hub==0.24.6
+pip install huggingface_hub==0.25.1
 goto :continue
 
 :install_modelscope
 echo Installing Modelscope Hub dependencies...
-pip install modelscope==1.17.1
+pip install modelscope==1.18.1
 goto :continue
 
 :continue

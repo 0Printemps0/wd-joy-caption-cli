@@ -1,5 +1,9 @@
+################## 使用此配置文件前请先另存为config.toml ##################
+################## 使用此配置文件前请先另存为config.toml ##################
+################## 使用此配置文件前请先另存为config.toml ##################
+
 ######### 数据路径相关设置 #########
-# 待处理图像数据路径
+# # 待处理图像数据路径，windows请使用正斜杠"/"或双反斜杠"\\"
 data_path = "path/to/your/input"
 # 自定义输出文件保存路径
 custom_caption_save_path = ""
@@ -8,9 +12,9 @@ recursive = false
 
 
 ######### 标注方法设置 #########
-# 标注方法，可选["both", "wd", "joy"]，选择WD或Joy模型，或者两者都使用
-caption_method = "both"
-# wd+joy的运行方法，可选["sync", "queue"]，需要将caption_method设置为 `both`
+# 标注方法，可选["wd+llama", "wd+joy","wd", "joy", "llama"]，选择WD或Joy模型，或者两者都使用
+caption_method = "wd+llama"
+# wd+joy的运行方法，可选["sync", "queue"]，需要将caption_method设置为"wd+llama"或"wd+joy"
 # 如果设置为"sync"，每个图像将使用WD模型添加标签，然后使用Joy模型添加字幕，再轮到下一张图像
 # 如果设置为"queue"，所有图像将首先使用WD模型进行标签，然后使用Joy模型对所有图像进行字幕
 run_method = "queue"
@@ -78,30 +82,34 @@ wd_character_threshold = false
 wd_file_action = "skip"
 
 
-######### Joy设置选项 #########
-# Joy配置文件，可选["default_joy.json", "uncensored_joy.json"]，和Joy模型列表对应
-joy_config = "default_joy.json"
-# Joy模型名称，可选["Joy-Caption-Pre-Alpha", "Joy-Caption-Uncensored"]，和Joy配置文件列表对应
-joy_model_name = "Joy-Caption-Pre-Alpha"
-# 是否Joy模型强制使用CPU
-joy_use_cpu = false
+######### llm设置选项 #########
+# llm配置文件，可选["default_joy.json", "uncensored_joy.json", "default_llama_3.2V.json"]
+# 和llm模型列表对应，Llama-3.2V模型都使用default_llama_3.2V.json
+llm_config = "default_llama_3.2V.json"
+# llm模型名称，可选["Joy-Caption-Pre-Alpha", "Joy-Caption-Uncensored", "Llama-3.2-11B-Vision-Instruct", "Llama-3.2-90B-Vision-Instruct"]
+# 和llm配置文件列表对应
+llm_model_name = "Llama-3.2-11B-Vision-Instruct"
+# 是否llm模型强制使用CPU
+llm_use_cpu = false
 # 调整CLIP识别的图像大小
 image_size = 1024
-# Joy LLM的精度类型，可选["fp16", "bf16"]
-joy_llm_dtype = "fp16"
-# 为Joy LLM启用量化，可选["none", "4bit", "8bit"]
-joy_llm_qnt = "none"
-# Joy字幕扩展名
-joy_caption_extension = ".txt"
+# llm的精度类型，可选["fp16", "bf16"]
+llm_dtype = "fp16"
+# 为llm启用量化，可选["none", "4bit", "8bit"]
+llm_qnt = "4bit"
+# llm字幕扩展名
+llm_caption_extension = ".txt"
 # 是否读取WD标签
-joy_read_wd_caption = true
+llm_read_wd_caption = true
 # 是否在忽略WD的标签下生成字幕
-joy_caption_without_wd = false
+llm_caption_without_wd = false
 # 控制LLM预测的随机性。较低的值使输出更加集中和确定性，而较高的值会增加随机性
-joy_temperature = 0.5
+llm_temperature = 0.5
 # LLM输出的最大tokens数量
-joy_max_tokens = 300
-# Joy标注文件操作，可选["skip", "prepend", "append", "overwrite"]
-joy_file_action = "skip"
-# 自定义LLM预设提示词
-joy_user_prompt = ""
+llm_max_tokens = 300
+# llm标注文件操作，可选["skip", "prepend", "append", "overwrite"]
+llm_file_action = "skip"
+# Llama-3.2V模型的系统预设提示词，为空则不启用系统预设提示词，为"DEFAULT_SYSTEM_PROMPT"则使用默认系统预设提示词
+llm_system_prompt = ""
+# 自定义LLM用户预设提示词，为空则使用默认用户预设提示词
+llm_user_prompt = ""
